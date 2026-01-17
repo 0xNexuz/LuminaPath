@@ -1,0 +1,5 @@
+{
+  "name": "LuminaPath Learning Generator",
+  "description": "A professional AI-powered learning roadmap generator that creates structured 4-week plans with verified resource links using Google Search grounding.",
+  "requestFramePermissions": []
+}
