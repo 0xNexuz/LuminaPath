@@ -8,82 +8,64 @@ interface MarkdownRendererProps {
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
   const lines = content.split('\n');
   
+  // Custom logic to group weeks into cards
   return (
-    <div className="space-y-4">
+    <div className="space-y-12">
       {lines.map((line, idx) => {
         const trimmed = line.trim();
         
-        // Main Title
-        if (trimmed.startsWith('# ')) {
-          return (
-            <h1 key={idx} className="text-3xl font-black text-slate-900 dark:text-white mb-8 border-b-4 border-indigo-500 pb-2 inline-block">
-              {trimmed.replace('# ', '')}
-            </h1>
-          );
-        }
+        // Main Title - ignored as we have hero
+        if (trimmed.startsWith('# ')) return null;
 
-        // Weekly Section
+        // Weekly Section - styled as a section header
         if (trimmed.startsWith('## Week')) {
+          const [label, title] = trimmed.replace('## ', '').split(':');
           return (
-            <div key={idx} className="mt-12 mb-6 sticky top-[65px] z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md py-2 border-b border-slate-100 dark:border-slate-800 transition-colors duration-300">
-              <h2 className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-3">
-                <span className="bg-indigo-600 dark:bg-indigo-700 text-white px-3 py-1 rounded-lg text-sm font-black uppercase tracking-widest">
-                  {trimmed.split(':')[0].replace('## ', '')}
-                </span>
-                <span className="text-slate-800 dark:text-slate-100">{trimmed.split(':')[1]?.trim()}</span>
-              </h2>
+            <div key={idx} className="mt-20 first:mt-0 mb-10">
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-indigo-600 mb-2 block">{label}</span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-[#1a1a1a] dark:text-white">{title?.trim()}</h2>
             </div>
           );
         }
 
-        // Daily Cards
+        // Daily Cards - styled like the "Engine building blocks"
         if (trimmed.startsWith('### Day')) {
           const dayTitle = trimmed.replace('### ', '');
           const [dayLabel, ...goalParts] = dayTitle.split(':');
           const goal = goalParts.join(':').replace(/Goal:?/i, '').trim();
 
-          return (
-            <div key={idx} className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm hover:shadow-md dark:hover:border-slate-700 transition-all mb-4">
-              <div className="flex flex-col md:flex-row md:items-center gap-2 mb-3">
-                <span className="text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-widest">
-                  {dayLabel}
-                </span>
-                {goal && (
-                  <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-semibold px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-2">
-                    <i className="fas fa-bullseye text-[10px]"></i>
-                    Goal: {goal}
-                  </span>
-                )}
-              </div>
-              <div className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                {/* Content text will follow from paragraphs logic */}
-              </div>
-            </div>
-          );
-        }
+          const colors = [
+            'from-pink-400 to-purple-500',
+            'from-green-400 to-blue-500',
+            'from-orange-400 to-yellow-500',
+            'from-purple-400 to-blue-500'
+          ];
+          const colorClass = colors[idx % colors.length];
 
-        // Normal text or bullets
-        if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
           return (
-            <li key={idx} className="ml-6 text-slate-600 dark:text-slate-400 list-disc mb-2 marker:text-indigo-400 dark:marker:text-indigo-500">
-              {trimmed.replace(/^[-*]\s/, '')}
-            </li>
+            <div key={idx} className="bg-[#1a1a1a] rounded-[40px] p-8 md:p-12 text-white relative overflow-hidden group mb-8">
+              <div className="flex flex-col md:flex-row gap-10 items-start relative z-10">
+                <div className={`w-24 h-24 md:w-32 md:h-32 rounded-[20px] bg-gradient-to-br ${colorClass} shrink-0 flex items-center justify-center text-4xl shadow-2xl`}>
+                  <i className={`fas ${idx % 2 === 0 ? 'fa-shapes' : 'fa-dna'} opacity-80`}></i>
+                </div>
+                <div>
+                  <h4 className="text-2xl font-extrabold mb-4">{dayLabel}: {goal}</h4>
+                  <div className="text-slate-400 font-medium leading-relaxed max-w-2xl text-lg">
+                    {/* The following paragraphs will be handled by the next lines logic */}
+                  </div>
+                </div>
+              </div>
+              {/* Decorative Blob */}
+              <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${colorClass} opacity-10 blur-3xl -mr-32 -mt-32 transition-transform group-hover:scale-125`}></div>
+            </div>
           );
         }
 
         if (trimmed === '' || trimmed === '## Resources' || trimmed.toLowerCase().includes('roadmap title')) return null;
 
-        // Bold parsing for standard paragraphs
-        const formattedLine = trimmed.split(/(\*\*.*?\*\*)/).map((part, i) => {
-          if (part.startsWith('**') && part.endsWith('**')) {
-            return <strong key={i} className="font-bold text-slate-800 dark:text-slate-200">{part.slice(2, -2)}</strong>;
-          }
-          return part;
-        });
-
         return (
-          <p key={idx} className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-            {formattedLine}
+          <p key={idx} className="text-slate-500 dark:text-slate-400 leading-relaxed mb-6 font-medium text-lg">
+            {trimmed.replace(/\*\*/g, '')}
           </p>
         );
       })}

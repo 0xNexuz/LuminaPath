@@ -4,28 +4,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LuminaPath - Learning Roadmap Generator</title>
+    <title>LuminaPath - Future of Learning</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-cream: #fdfbf7;
+            --dark-obsidian: #1a1a1a;
+        }
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-cream);
+            color: var(--dark-obsidian);
+            overflow-x: hidden;
         }
-        @keyframes fade-in {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .dark body {
+            background-color: #0d0d0d;
+            color: #fdfbf7;
         }
-        @keyframes scale-in {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        
+        /* Floating Blobs */
+        .blob {
+            position: absolute;
+            filter: blur(40px);
+            z-index: 0;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 20s infinite alternate ease-in-out;
         }
-        .animate-fade-in {
-            animation: fade-in 0.2s ease-out forwards;
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0, 0) scale(1); }
         }
-        .animate-scale-in {
-            animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        
+        .blob-pink { background: linear-gradient(135deg, #ff0080, #7928ca); width: 300px; height: 300px; }
+        .blob-green { background: linear-gradient(135deg, #00dfd8, #007cf0); width: 250px; height: 250px; }
+        .blob-orange { background: linear-gradient(135deg, #ff4d4d, #f9cb28); width: 200px; height: 200px; }
+
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scale-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-fade-in { animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-scale-in { animation: scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
     </style>
 <script type="importmap">
@@ -34,9 +61,7 @@
     "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
     "@google/genai": "https://esm.sh/@google/genai@^1.37.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "vite": "https://esm.sh/vite@^7.3.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
   }
 }
 </script>
