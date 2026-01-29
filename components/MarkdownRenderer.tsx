@@ -5,70 +5,99 @@ interface MarkdownRendererProps {
   content: string;
 }
 
+interface DayBlock {
+  label: string;
+  goal: string;
+  description: string[];
+}
+
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
   const lines = content.split('\n');
+  const renderedElements: React.ReactNode[] = [];
   
-  // Custom logic to group weeks into cards
-  return (
-    <div className="space-y-12">
-      {lines.map((line, idx) => {
-        const trimmed = line.trim();
-        
-        // Main Title - ignored as we have hero
-        if (trimmed.startsWith('# ')) return null;
+  let currentDayBlock: DayBlock | null = null;
 
-        // Weekly Section - styled as a section header
-        if (trimmed.startsWith('## Week')) {
-          const [label, title] = trimmed.replace('## ', '').split(':');
-          return (
-            <div key={idx} className="mt-20 first:mt-0 mb-10">
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-indigo-600 mb-2 block">{label}</span>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-[#1a1a1a] dark:text-white">{title?.trim()}</h2>
+  const flushDayBlock = (key: number) => {
+    if (!currentDayBlock) return;
+    
+    const colors = [
+      'from-pink-400 to-purple-500',
+      'from-emerald-400 to-teal-500',
+      'from-orange-400 to-amber-500',
+      'from-blue-400 to-indigo-500',
+      'from-fuchsia-400 to-rose-500'
+    ];
+    const icons = ['fa-shapes', 'fa-dna', 'fa-atom', 'fa-brain', 'fa-sparkles'];
+    const colorIndex = Math.floor(key / 2) % colors.length;
+    const colorClass = colors[colorIndex];
+    const iconClass = icons[colorIndex];
+
+    renderedElements.push(
+      <div key={`day-${key}`} className="bg-[#1a1a1a] rounded-[40px] p-8 md:p-12 text-white relative overflow-hidden group mb-10 transition-all hover:scale-[1.01] hover:shadow-2xl">
+        <div className="flex flex-col md:flex-row gap-10 items-start relative z-10">
+          <div className={`w-24 h-24 md:w-32 md:h-32 rounded-[30px] bg-gradient-to-br ${colorClass} shrink-0 flex items-center justify-center text-4xl shadow-2xl transition-transform group-hover:rotate-6`}>
+            <i className={`fas ${iconClass} opacity-90 text-white`}></i>
+          </div>
+          <div className="flex-1">
+            <h4 className="text-2xl font-extrabold mb-4 tracking-tight">
+              <span className="text-indigo-400 opacity-80 mr-2">{currentDayBlock.label}:</span> 
+              {currentDayBlock.goal}
+            </h4>
+            <div className="space-y-4">
+              {currentDayBlock.description.map((p, pIdx) => (
+                <p key={pIdx} className="text-slate-400 font-medium leading-relaxed text-lg">
+                  {p.replace(/\*\*/g, '')}
+                </p>
+              ))}
             </div>
-          );
-        }
+          </div>
+        </div>
+        {/* Decorative Glassy Blob */}
+        <div className={`absolute top-0 right-0 w-80 h-80 bg-gradient-to-br ${colorClass} opacity-[0.07] blur-[100px] -mr-40 -mt-40 transition-opacity group-hover:opacity-20`}></div>
+      </div>
+    );
+    currentDayBlock = null;
+  };
 
-        // Daily Cards - styled like the "Engine building blocks"
-        if (trimmed.startsWith('### Day')) {
-          const dayTitle = trimmed.replace('### ', '');
-          const [dayLabel, ...goalParts] = dayTitle.split(':');
-          const goal = goalParts.join(':').replace(/Goal:?/i, '').trim();
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed === '## Resources' || trimmed.toLowerCase().includes('roadmap title')) return;
 
-          const colors = [
-            'from-pink-400 to-purple-500',
-            'from-green-400 to-blue-500',
-            'from-orange-400 to-yellow-500',
-            'from-purple-400 to-blue-500'
-          ];
-          const colorClass = colors[idx % colors.length];
+    if (trimmed.startsWith('# ')) return;
 
-          return (
-            <div key={idx} className="bg-[#1a1a1a] rounded-[40px] p-8 md:p-12 text-white relative overflow-hidden group mb-8">
-              <div className="flex flex-col md:flex-row gap-10 items-start relative z-10">
-                <div className={`w-24 h-24 md:w-32 md:h-32 rounded-[20px] bg-gradient-to-br ${colorClass} shrink-0 flex items-center justify-center text-4xl shadow-2xl`}>
-                  <i className={`fas ${idx % 2 === 0 ? 'fa-shapes' : 'fa-dna'} opacity-80`}></i>
-                </div>
-                <div>
-                  <h4 className="text-2xl font-extrabold mb-4">{dayLabel}: {goal}</h4>
-                  <div className="text-slate-400 font-medium leading-relaxed max-w-2xl text-lg">
-                    {/* The following paragraphs will be handled by the next lines logic */}
-                  </div>
-                </div>
-              </div>
-              {/* Decorative Blob */}
-              <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${colorClass} opacity-10 blur-3xl -mr-32 -mt-32 transition-transform group-hover:scale-125`}></div>
-            </div>
-          );
-        }
+    if (trimmed.startsWith('## Week')) {
+      flushDayBlock(idx);
+      const [label, title] = trimmed.replace('## ', '').split(':');
+      renderedElements.push(
+        <div key={`week-${idx}`} className="mt-24 first:mt-0 mb-12 animate-fade-in">
+          <span className="text-[11px] font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-3 block">Timeline • {label}</span>
+          <h2 className="text-4xl md:text-5xl font-[900] text-[#1a1a1a] dark:text-white tracking-tighter leading-none">{title?.trim() || 'Focus Session'}</h2>
+        </div>
+      );
+      return;
+    }
 
-        if (trimmed === '' || trimmed === '## Resources' || trimmed.toLowerCase().includes('roadmap title')) return null;
+    if (trimmed.startsWith('### Day')) {
+      flushDayBlock(idx);
+      const dayTitle = trimmed.replace('### ', '');
+      const [dayLabel, ...goalParts] = dayTitle.split(':');
+      const goal = goalParts.join(':').replace(/Goal:?/i, '').trim();
+      currentDayBlock = { label: dayLabel.trim(), goal, description: [] };
+      return;
+    }
 
-        return (
-          <p key={idx} className="text-slate-500 dark:text-slate-400 leading-relaxed mb-6 font-medium text-lg">
-            {trimmed.replace(/\*\*/g, '')}
-          </p>
-        );
-      })}
-    </div>
-  );
+    if (currentDayBlock) {
+      currentDayBlock.description.push(trimmed);
+    } else {
+      renderedElements.push(
+        <p key={idx} className="text-slate-500 dark:text-slate-400 leading-relaxed mb-6 font-medium text-lg max-w-3xl">
+          {trimmed.replace(/\*\*/g, '')}
+        </p>
+      );
+    }
+  });
+
+  flushDayBlock(999); // Final flush
+
+  return <div className="roadmap-container">{renderedElements}</div>;
 };
